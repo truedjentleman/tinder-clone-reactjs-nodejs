@@ -13,6 +13,10 @@ body {
   text-align: center;
 }
 
+h2 {
+  font-style: italic;
+}
+
 .primary-button {
   color: #fff;
   text-transform: uppercase;
@@ -107,5 +111,18 @@ nav .logo-container .logo {
 }
 
 .auth-modal .close-icon {
-  float: right
+  float: right;
+  cursor: pointer
+}
+
+.auth-modal form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-modal input[type=password],
+.auth-modal input[type=email] {
+  padding: 8px;
+  margin: 8px;
+  font-size: 17px;
 }
