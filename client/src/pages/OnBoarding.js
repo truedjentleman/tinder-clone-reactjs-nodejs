@@ -1,10 +1,18 @@
 import { useState } from "react";
+import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import Nav from "../components/Nav";
 
 const OnBoarding = () => {
+  const [cookies, setCookie, removeCookie] = useCookies(["user"]);
+
+  const navigate = useNavigate();
+
+  // updating existing object from DB which is created during signUp by adding formData
   const [formData, setFormData] = useState({
-    user_id: '',
+    user_id: cookies.UserId,
     first_name: '',
     dob_day: '',
     dob_month: '',
@@ -12,14 +20,24 @@ const OnBoarding = () => {
     show_gender: false,
     gender_identity: 'man',
     gender_interest: 'woman',
-    email: '',
+    // email: cookies.Email,  - already exist
     url: '',
     about: '',
     matches: '',
   })
 
-  const handleSubmit = () => {
-    console.log("Submitted");
+
+  // send data from form to DB via server
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.put('http://localhost:8000/user', { formData })
+      // console.log(formData);   // DEBUG
+      const success = response.status === 200
+      if (success) navigate("/dashboard"); // navigate to 'dashboard' page if data update is successful
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleChange = (e) => {
@@ -34,8 +52,6 @@ const OnBoarding = () => {
 
     }))
   };
-
-  console.log(formData);
 
   return (
     <>
@@ -180,7 +196,7 @@ const OnBoarding = () => {
               onChange={handleChange}
             />
             <div className="photo-container">
-              <img src={formData.url} alt="profile pic preview"/>
+              {formData.url && <img src={formData.url} alt="profile pic preview"/>}
             </div>
           </section>
         </form>
