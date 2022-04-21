@@ -82,7 +82,7 @@ app.post("/login", async (req, res) => {
       user.hashed_password
     );
 
-    // if user exists and password is correct - cretae token
+    // if user exists and password is correct - create token
     if (user && correctPassword) {
       const token = jwt.sign(user, email, {
         expiresIn: 60 * 24,
@@ -96,24 +96,49 @@ app.post("/login", async (req, res) => {
 });
 
 
-// get array of the users
-app.get("/users", async (req, res) => {
-  const client = new MongoClient(uri);
+// GET the individual user information
+app.get('/user', async (req, res) => {
+  const client = new MongoClient(uri)
+  const userId = req.query.userId
+
+  console.log(req.query); // DEBUG
 
   try {
     await client.connect(); // connect to URI
     const database = client.db("app-data"); // get access to DB
     const users = database.collection("users"); // get access to collection
 
-    const returnedUsers = await users.find().toArray(); // convert collection to an array
-    res.send(returnedUsers);
+    const query = { user_id: userId }  // query for user search
+    const user = await users.findOne(query); // search user by query (userId)
+    res.send(user)  // send back to front
+  } finally {
+    await client.close(); // close the access to collection after request or if there is a error
+  }
+})
+
+
+// GET array of the USERS filtered by GENDER
+app.get("/gendered-users", async (req, res) => {
+  const client = new MongoClient(uri);
+  const gender = req.query.gender
+
+  console.log('gender', gender);
+
+  try {
+    await client.connect(); // connect to URI
+    const database = client.db("app-data"); // get access to DB
+    const users = database.collection("users"); // get access to collection
+    const queryByGender = { gender_identity: {$eq : gender}}
+    const foundUsers = await users.find(queryByGender).toArray() // convert found collection to an array
+
+    res.send(foundUsers);  // send back to front
   } finally {
     await client.close(); // close the access to collection after request or if there is a error
   }
 });
 
 
-// UPDATE USER Object
+// UPDATE USER Object - PUT
 app.put("/user", async (req, res) => {
   const client = new MongoClient(uri);
   const formData = req.body.formData; // get the data from request body
