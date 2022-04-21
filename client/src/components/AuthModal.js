@@ -42,6 +42,8 @@ const AuthModal = ({ setShowModal, isSignUp }) => {
       const success = response.status === 201;
       if (success && isSignUp) navigate("/onboarding"); // navigate to 'onboarding' page if signup is successful
       if (success && !isSignUp) navigate("/dashboard"); // navigate to 'dashboard' page if login (not signUp) is successful
+
+      window.location.reload() // reload the window after log in to make sure that authToken gets read by 'onboarding' and 'dashboard' pages
     
     } catch (error) {
       console.log(error);
