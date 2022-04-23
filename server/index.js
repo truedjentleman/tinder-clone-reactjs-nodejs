@@ -99,7 +99,7 @@ app.post("/login", async (req, res) => {
 // GET the individual user information
 app.get('/user', async (req, res) => {
   const client = new MongoClient(uri)
-  const userId = req.query.userId
+  const userId = req.query.userId  // get data from frontend
 
   console.log(req.query); // DEBUG
 
@@ -108,30 +108,65 @@ app.get('/user', async (req, res) => {
     const database = client.db("app-data"); // get access to DB
     const users = database.collection("users"); // get access to collection
 
-    const query = { user_id: userId }  // query for user search
+    const query = { user_id: userId }  // query for user search  - by userId
     const user = await users.findOne(query); // search user by query (userId)
-    res.send(user)  // send back to front
+    res.send(user)  // send back to frontend ( get this back in our frontend)
+  } finally {
+    await client.close(); // close the access to collection after request or if there is a error
+  }
+})
+
+// GET matched users information
+app.get('/users', async (req, res) => {
+  const client = new MongoClient(uri)
+  const userIds = JSON.parse(req.query.userIds) // get stringified array form frontend and parse it to array
+  // console.log(userIds); // DEBUG
+
+  try {
+    await client.connect(); // connect to URI
+    const database = client.db("app-data"); // get access to DB
+    const users = database.collection("users"); // get access to collection of users
+
+    const pipeline =
+      [
+        {
+          '$match': {
+            'user_id': {
+              '$in': userIds
+            }
+          }
+        }
+      ]
+    const foundUsers = await users.aggregate(pipeline).toArray()  // get the users from collection based on a pipeline and turn this to Array 
+    console.log(foundUsers)
+    res.send(foundUsers) // send back to frontend ( get this back in our frontend)
+
   } finally {
     await client.close(); // close the access to collection after request or if there is a error
   }
 })
 
 
+
+
+
+
+
 // GET array of the USERS filtered by GENDER
 app.get("/gendered-users", async (req, res) => {
   const client = new MongoClient(uri);
-  const gender = req.query.gender
-
-  console.log('gender', gender);
+  const gender = req.query.gender  // get data from frontend
+ 
+  // console.log('gender', gender);  // DEBUG
 
   try {
     await client.connect(); // connect to URI
     const database = client.db("app-data"); // get access to DB
     const users = database.collection("users"); // get access to collection
-    const queryByGender = { gender_identity: {$eq : gender}}
+    const queryByGender = { gender_identity: {$eq : gender}}   // query by gender
     const foundUsers = await users.find(queryByGender).toArray() // convert found collection to an array
 
-    res.send(foundUsers);  // send back to front
+    res.send(foundUsers);  // send back to frontend ( get this back in our frontend)
   } finally {
     await client.close(); // close the access to collection after request or if there is a error
   }
@@ -141,7 +176,7 @@ app.get("/gendered-users", async (req, res) => {
 // UPDATE USER Object - PUT
 app.put("/user", async (req, res) => {
   const client = new MongoClient(uri);
-  const formData = req.body.formData; // get the data from request body
+  const formData = req.body.formData; // get the data from request body - from frontend
 
 //   console.log(formData); // DEBUG
 
@@ -166,12 +201,37 @@ app.put("/user", async (req, res) => {
         matches: formData.matches,
       },
     }
-    // update the user info in DB
+    // update the user's info in DB
     const insertedUser = await users.updateOne(query, updateDocument);
-    res.send(insertedUser);
+    res.send(insertedUser); // send back to frontend ( get this back in our frontend)
   } finally {
     await client.close(); // close the access to collection after request or if there is a error
   }
 });
 
 app.listen(PORT, () => console.log("Server running on PORT " + PORT));
+
+
+// UPDATE matched user array for specified user - put
+app.put("/addmatch", async (req, res) => {
+  const client = new MongoClient(uri)
+  const { userId, matchedUserId } = req.body  // get data from frontend - from req body
+
+  try {
+    await client.connect(); // connect to URI
+    const database = client.db("app-data"); // get access to DB
+    const users = database.collection("users"); // get access to collection
+
+    const query = { user_id: userId }  // query by userId - looking for 'signed in' user by ID
+    const updateDocument = {
+      $push: { matches: {user_id: matchedUserId}}  // append the {user_id: matchedUserId} to 'matches' array
+    }
+
+      // update the 'signed in' user's info in DB with 'matches' array
+    const user = await users.updateOne(query, updateDocument)
+    res.send(user); // send back to frontend ( get this back in our frontend)
+
+  } finally {
+    await client.close(); // close the access to collection after request or if there is a error
+  }
+})
