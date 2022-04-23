@@ -28,7 +28,7 @@ const ChatContainer = ({ user }) => {
         />
       )}
 
-      {clickedUser && <ChatDisplay />}
+      {clickedUser && <ChatDisplay user={user} clickedUser={clickedUser}/>}
     </div>
   );
 };
