@@ -23,7 +23,7 @@ const OnBoarding = () => {
     // email: cookies.Email,  - already exist
     url: '',
     about: '',
-    matches: '',
+    matches: [],
   })
 
 
