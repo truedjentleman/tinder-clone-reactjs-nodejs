@@ -41,11 +41,11 @@ const Dashboard = () => {
   useEffect(() => {
     getUser()
     getGenderedUsers()
-  }, [])
-  // }, [user, genderedUsers])
+  // }, [])
+  }, [user, genderedUsers])   // TODO:
 
   // console.log('user', user);  // DEBUG
-  console.log('gendered users', genderedUsers);
+  // console.log('gendered users', genderedUsers); // DEBUG
 
    
   
@@ -78,13 +78,21 @@ const Dashboard = () => {
     console.log(name + " left the screen!");
   };
 
+  // to get user_ids of matched users from user object (user.matches array) and add user's own user_id
+  const matchedUserIdsPlusMe = user?.matches.map(({ user_id }) => user_id).concat(userId)
+
+  // filter already matched users (including user it self), so that they are not showing up in 'Tinder Card' as a recommendations
+  const filteredGenderedUsers = genderedUsers?.filter(
+    genderedUser => !matchedUserIdsPlusMe.includes(genderedUser.user_id)
+  )
+
   return (
     <>
      {user && <div className="dashboard">
         <ChatContainer user={user}/>
         <div className="swipe-container">
           <div className="card-container">
-            {genderedUsers?.map((genderedUser) => 
+            {filteredGenderedUsers?.map((genderedUser) => 
               <TinderCard
                 className="swipe"
                 key={genderedUser.first_name}
