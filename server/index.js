@@ -5,9 +5,10 @@ const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+require("dotenv").config()
 
-const uri =
-  "mongodb+srv://andrewb:Terminator2019@cluster0.sqs5v.mongodb.net/Cluster0?retryWrites=true&w=majority";
+
+const uri = process.env.URI
 
 const app = express();
 app.use(cors()); // to enable CORS
@@ -18,7 +19,7 @@ app.get("/", (req, res) => {
 });
 
 
-// SIGNUP
+// SIGNUP - POST request
 app.post("/signup", async (req, res) => {
   const client = new MongoClient(uri);
   const { email, password } = req.body;
@@ -63,7 +64,7 @@ app.post("/signup", async (req, res) => {
 });
 
 
-// LOGIN
+// LOGIN - POST request
 app.post("/login", async (req, res) => {
   const client = new MongoClient(uri);
   const { email, password } = req.body;
@@ -88,8 +89,7 @@ app.post("/login", async (req, res) => {
         expiresIn: 60 * 24,
       });
       res.status(201).json({ token, userId: user.user_id });
-    }
-    res.status(400).send("Invalid credentials");
+    } else res.status(400).send("Invalid credentials");
   } catch (err) {
     console.log(err);
   }
@@ -99,9 +99,9 @@ app.post("/login", async (req, res) => {
 // GET the individual user information
 app.get('/user', async (req, res) => {
   const client = new MongoClient(uri)
-  const userId = req.query.userId  // get data from frontend
+  const userId = req.query.userId  // get data from frontend - from req body (params)
 
-  console.log(req.query); // DEBUG
+  // console.log(req.query); // DEBUG
 
   try {
     await client.connect(); // connect to URI
@@ -115,6 +115,7 @@ app.get('/user', async (req, res) => {
     await client.close(); // close the access to collection after request or if there is a error
   }
 })
+
 
 // GET matched users information
 app.get('/users', async (req, res) => {
@@ -138,7 +139,7 @@ app.get('/users', async (req, res) => {
         }
       ]
     const foundUsers = await users.aggregate(pipeline).toArray()  // get the users from collection based on a pipeline and turn this to Array 
-    console.log(foundUsers)
+    // console.log(foundUsers)
     res.send(foundUsers) // send back to frontend ( get this back in our frontend)
 
   } finally {
@@ -147,15 +148,10 @@ app.get('/users', async (req, res) => {
 })
 
 
-
-
-
-
-
 // GET array of the USERS filtered by GENDER
 app.get("/gendered-users", async (req, res) => {
   const client = new MongoClient(uri);
-  const gender = req.query.gender  // get data from frontend
+  const gender = req.query.gender  // get data from frontend - from req body (params)
  
   // console.log('gender', gender);  // DEBUG
 
@@ -176,7 +172,7 @@ app.get("/gendered-users", async (req, res) => {
 // UPDATE USER Object - PUT
 app.put("/user", async (req, res) => {
   const client = new MongoClient(uri);
-  const formData = req.body.formData; // get the data from request body - from frontend
+  const formData = req.body.formData; // get data from frontend - from req body (params)
 
 //   console.log(formData); // DEBUG
 
@@ -186,7 +182,7 @@ app.put("/user", async (req, res) => {
     const users = database.collection("users"); // get access to collection
 
     const query = { user_id: formData.user_id }; // looking for the user by user_id from formData
-    console.log(query);
+    // console.log(query); // DEBUG
     const updateDocument = {
       $set: {
         first_name: formData.first_name,
@@ -209,13 +205,11 @@ app.put("/user", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log("Server running on PORT " + PORT));
-
 
 // UPDATE matched user array for specified user - put
 app.put("/addmatch", async (req, res) => {
   const client = new MongoClient(uri)
-  const { userId, matchedUserId } = req.body  // get data from frontend - from req body
+  const { userId, matchedUserId } = req.body  // get data from frontend - from req body (params)
 
   try {
     await client.connect(); // connect to URI
@@ -229,9 +223,58 @@ app.put("/addmatch", async (req, res) => {
 
       // update the 'signed in' user's info in DB with 'matches' array
     const user = await users.updateOne(query, updateDocument)
-    res.send(user); // send back to frontend ( get this back in our frontend)
+    res.send(user); // send back to frontend (get this back in our frontend)
 
   } finally {
     await client.close(); // close the access to collection after request or if there is a error
   }
 })
+
+
+
+// GET USERS MESSAGES when matched user selection
+app.get("/messages", async (req, res) => {
+  const client = new MongoClient(uri)   // set the Mongo DB object 
+  const { userId, correspondingUserId } = req.query // get data from frontend - from req body (params)
+
+  // console.log(userId, correspondingUserId); // DEBUG
+
+  try {
+    await client.connect()  // connect to URI
+    const database = client.db("app-data")  // get access to DB
+    const messages = database.collection('messages')  // get access to collection
+
+    const query = {
+      from_userId: userId, to_userId: correspondingUserId
+    }
+    const foundMessage = await messages.find(query).toArray()  // put in foundMessages data found based on query and create array of it
+    res.send(foundMessage)  // send back to frontend (get this back in our frontend)
+  } finally {
+    await client.close()
+  }
+})
+
+
+// POST message to DB
+app.post('/message', async (req, res) => {
+  const client = new MongoClient(uri)   // set the Mongo DB object 
+  const message = req.body.message
+
+  try {
+    await client.connect()  // connect to URI
+    const database = client.db("app-data")  // get access to DB
+    const messages = database.collection('messages')  // get access to collection
+
+    const insertedMessage = await messages.insertOne(message)  // insert one message into the collection
+    res.send(insertedMessage)  // send back to frontend (get this back in our frontend)
+    
+  } finally {
+    await client.close()
+  }
+})
+
+
+
+
+
+app.listen(PORT, () => console.log("Server running on PORT " + PORT));
