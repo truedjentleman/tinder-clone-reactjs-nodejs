@@ -285,12 +285,21 @@ nav .logo-container .logo {
   border-bottom: solid 4px rgb(187, 187, 187);
 }
 
+
 .chat-container .profile,
 .chat-container .log-out-icon {
   display: flex;
   align-items: center;
   padding: 20px;
   color: rgb(255, 255, 255);
+}
+
+.matches-display .match-card {
+  cursor: pointer;
+}
+
+.log-out-icon {
+  cursor: pointer;
 }
 
 .image-container {
@@ -305,8 +314,11 @@ nav .logo-container .logo {
   width: 100%;
 }
 
+
 /* ---- Chat Display ---- */
-.chat-display {
+.chat-display,
+.matches-display {
+  padding: 20px;
   height: 60vh;
   overflow-y: auto;
 }
