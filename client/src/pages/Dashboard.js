@@ -40,9 +40,13 @@ const Dashboard = () => {
   // USE EFFECT
   useEffect(() => {
     getUser()
-    getGenderedUsers()
-  // }, [])
-  }, [user, genderedUsers])   // TODO:
+  }, [])  // TODO:update if needed
+
+  useEffect(() => {
+    if(user) {
+      getGenderedUsers()
+    }
+  }, [user])  // TODO:update if needed
 
   // console.log('user', user);  // DEBUG
   // console.log('gendered users', genderedUsers); // DEBUG
@@ -95,7 +99,7 @@ const Dashboard = () => {
             {filteredGenderedUsers?.map((genderedUser) => 
               <TinderCard
                 className="swipe"
-                key={genderedUser.first_name}
+                key={genderedUser.user_id}
                 onSwipe={(dir) => swiped(dir, genderedUser.user_id)}
                 onCardLeftScreen={() => outOfFrame(genderedUser.first_name)}
               >
