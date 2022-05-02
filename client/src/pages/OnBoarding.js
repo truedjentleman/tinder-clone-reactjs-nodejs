@@ -43,7 +43,7 @@ const OnBoarding = () => {
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value
     const name = e.target.name
-    console.log('value' + value, 'name' + name);
+    // console.log('value' + value, 'name' + name); // DEBUG
     
   /* set the value of object property by it's property got from event */
     setFormData((prevState) => ({
