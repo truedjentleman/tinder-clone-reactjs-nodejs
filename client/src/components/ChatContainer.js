@@ -6,13 +6,13 @@ import MatchesDisplay from "./MatchesDisplay";
 const ChatContainer = ({ user }) => {
   const [clickedUser, setClickedUser] = useState(null); // state for user clicked in 'Matches' part
 
-    console.log('clicked user', clickedUser);
+    // console.log('clicked user', clickedUser); //  DEBUG
 
   return (
     <div className="chat-container">
       <ChatHeader user={user} />
 
-      <div>
+      <div className="chat-container-matches-menu">
         <button className="option" onClick={() => setClickedUser(null)}>
           Matches
         </button>
