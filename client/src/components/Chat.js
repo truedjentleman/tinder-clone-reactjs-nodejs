@@ -1,7 +1,7 @@
-const Chat = ({ formOldToNewOrderMessages }) => {
+const Chat = ({ fromOldToNewOrderMessages }) => {
   return (
     <div className="chat-display">
-      {formOldToNewOrderMessages.map((message, _index) => (
+      {fromOldToNewOrderMessages.map((message, _index) => (
         <div key={_index}>
           <div className="chat-message-header">
             <div className="image-container">
