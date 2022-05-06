@@ -67,13 +67,13 @@ const ChatDisplay = ({ user, clickedUser }) => {
     
 
   // Sorting messages array of objects using localeCompare() - return negative or positive number
-  const formOldToNewOrderMessages = messages?.sort((a, b) =>
+  const fromOldToNewOrderMessages = messages?.sort((a, b) =>
     a.timestamp.localeCompare(b.timestamp)
   );
 
   return (
     <>
-      <Chat formOldToNewOrderMessages={formOldToNewOrderMessages} />
+      <Chat formOldToNewOrderMessages={fromOldToNewOrderMessages} />
       <ChatInput
         user={user}
         clickedUser={clickedUser}
