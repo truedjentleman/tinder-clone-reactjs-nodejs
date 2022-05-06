@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useCookies } from "react-cookie";
 
 const MatchesDisplay = ({ matches, setClickedUser }) => {
+  
+  const [cookies, setCookie, removeCookie] = useCookies(["user"]);
+
   const [matchedProfiles, setMatchedProfiles] = useState(null);
 
   const matchedUserIds = matches.map(({ user_id }) => user_id); // get array of matched user_ids
+  const userId = cookies.UserId
 
   const getMatches = async () => {
     try {
@@ -20,16 +25,28 @@ const MatchesDisplay = ({ matches, setClickedUser }) => {
   };
 
   useEffect(() => {
+    const controller = new AbortController();
     getMatches();
-  }, []);
+    return () => controller.abort();
+
+  }, [matches]);   // TODO:update if needed
 
   //console.log(matchedProfiles); // DEBUG
 
+  // filter out the users only if they have matched the current user too, if both people match
+  // check in matched profiles users that have in property 'matches' current user's ID
+  const filteredBothMatchesProfiles = matchedProfiles?.filter(
+    (matchedProfile) =>   // check if returned  filtered array not empty, it's only if matched user has in 'matches' current user's ID
+      matchedProfile.matches.filter(
+        (profile) =>     // return array with current user's ID or empty array if not found
+          profile.user_id === userId).length > 0   
+  )
+
   return (
     <div className="matches-display">
-      {matchedProfiles?.map((match, _index) => (
+      {filteredBothMatchesProfiles?.map((match) => (
         <div
-          key={_index}
+          key={match.user_id}
           className="match-card"
           onClick={() => setClickedUser(match)}
         >

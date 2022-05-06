@@ -23,7 +23,7 @@ const ChatHeader = ({ user }) => {
                 <h3>{user.first_name}</h3>
             </div>
             {/* remove Cookies on click Log Out button */}
-            <i className="log-out-icon" onClick={logout}>⇦</i>
+            <i className="log-out-icon" onClick={logout}>Logout</i>
         </div>
     );
 };
